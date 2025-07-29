@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+
+
+<!-- Main Content -->
+<div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                <script>
+                    // Hide flash message after 5 seconds
+                    setTimeout(function() {
+                        document.querySelectorAll('.flash-message').forEach(function(el) {
+                            el.style.display = 'none';
+                        });
+                    }, 1000);
+                </script>
+            {% endif %}
+        {% endwith %}
+    <h1>Admin Dashboard</h1>
+
+    <!-- Tab Navigation -->
+    <div class="dashboard-tabs">
+        <button onclick="showSection('add-product-section')" class="tab-btn active">➕ Add Product</button>
+        <button onclick="showSection('product-list-section')" class="tab-btn">📦 Product List</button>
+        <button onclick="showSection('company-login-section')" class="tab-btn">🏢 Add company</button>
+        <button onclick="showSection('mail')" class="tab-btn">
+    <i class="fas fa-envelope"></i> Mail
+</button>
+
+    </div>
+    <!-- Add Product Section -->
+    <div id="add-product-section" class="tab-section">
+        <h2>Add Product</h2>
+        <form action="{{ url_for('admin_dashboard') }}" method="POST" enctype="multipart/form-data" class="form-content">
+            <label for="name">Product Name</label>
+            <input type="text" id="name" name="name" placeholder="Product Name" required>
+
+            <label for="description">Product Description</label>
+            <textarea id="description" name="description" placeholder="Product Description" required></textarea>
+
+            <label for="price">Product Price</label>
+            <input type="number" id="price" name="price" placeholder="Product Price" step="0.01" required>
+
+            <label for="offer">Offer (%)</label>
+            <input type="number" id="offer" name="offer" placeholder="Offer Percentage" step="0.01" min="0" max="100">
+
+    <br><br><label for="category">Category</label>
+        <input list="category-options"
+            id="category"
+            name="category"
+            placeholder="Enter Category"
+            style="width: 1230px; height: 40px; color: white; background-color: rgb(37, 35, 35); border: 1px solid rgb(105, 105, 105);">
+            
+        <datalist id="category-options">
+            {% for category in category_list %}
+                <option value="{{ category }}">
+            {% endfor %}
+        </datalist>
+        <br>
+
+            <label for="sub_category">Sub Category</label>
+            <input type="text" id="sub_category" name="sub_category" placeholder="Sub Category">
+            <br>
+
+            <label for="image">Product Image</label>
+            <input type="file" id="image" name="image" accept="image/*" style="width: 1230px; height: 50px; background-color:  rgb(36, 36, 36); color: rgb(153, 153, 153); border: 1px solid rgb(76, 76, 76);">
+
+
+            <br><br><label for="brand">Brand</label>
+            <input list="brand-options"
+                id="brand"
+                name="brand"
+                placeholder="Enter Brand"
+                style="width: 1230px; height: 40px; color: white; background-color: rgb(37, 35, 35); border: 1px solid rgb(105, 105, 105);">
+                
+            <datalist id="brand-options">
+                {% for brand in brand %}
+                    <option value="{{ brand }}">
+                {% endfor %}
+            </datalist>
+            <br>
+
+            <br><label for="stock">Stock</label>
+            <select name="stock" id="stock" required>
+                <option value="available">Yes</option>
+                <option value="not_available">No</option>
+            </select>
+
+            <button type="submit">Add Product</button>
+        </form>
+    </div>
+
+    <!-- Product List Section -->
+    <div id="product-list-section" class="tab-section" style="display: none;">
+        <h2>Product List</h2>
+        <div class="search-filter">
+            <input type="text" id="search" placeholder="Search products..." class="search-bar">
+        </div>
+
+        <div class="product-grid">
+            {% if products %}
+                {% for product in products %}
+                    <div class="product-card" style="height: 800px;">
+                        <p style="color: #888; font-size: 14px; margin-bottom: 10px; text-align: left;">
+                            {{ product.category|title }}
+                        </p>
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename='product_images/' ~ product.image)|default(url_for('static', filename='default.png')) }}" alt="{{ product.name }}" style="max-width: 100%; height: auto;">
+                        </div>
+                        <div class="product-info" style="height: 350px; display: flex; flex-direction: column; justify-content: space-between; padding: 10px;">
+                            <div style="flex-grow: 1;">
+                                <h3>{{ product.name[:100] }}{% if product.name|length > 130 %}...{% endif %}</h3>
+                                <div class="star-rating">
+                                    {% for i in range(5, 0, -1) %}
+                                        {% if i <= product.rating|round(0, 'floor') %}
+                                            <span style="color: gold;">★</span>
+                                        {% else %}
+                                            <span style="color: lightgray;">★</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <p class="description">
+                                    {{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}
+                                </p>
+                                <h6>{{ product.sub_category[:50] }}{% if product.sub_category|length > 50 %}...{% endif %}</h6>
+                            </div>
+                            <a class="secondary-btn" href="{{ url_for('edit_product', product_id=product.id) }}">Edit</a>
+                            <br>
+                            <form action="{{ url_for('delete_product', product_id=product.id) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="secondary-btn">Delete</button>
+                            </form>
+                        </div>
+                        <div class="hidden-data" style="display: none;">
+                            {{ product.name }}
+                            {{ product.description }}
+                            {{ product.sub_category }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No products available.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Company Login Section -->
+    <div id="company-login-section" class="tab-section" style="display: none;">
+        <h2>Add company</h2>
+        <form action="{{url_for('company_register')}}" method="POST" class="form-content">
+            <label for="company_name">Company Name</label>
+            <input type="text" id="company_name" name="company_name" placeholder="Company Name" required>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Email" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+
+            <button type="submit">Login</button>
+        </form>
+
+    </div>
+
+    <div id="mail" class="tab-section" style="display: none;">
+    <h2 style="color: #f3ce00;">📩 User Messages</h2>
+    <p>Below are the messages submitted through the contact form.</p>
+
+    <table class="mail-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead style="background-color: #333; color: white;">
+            <tr>
+                <th style="padding: 10px; border: 1px solid #555;">#</th>
+                <th style="padding: 10px; border: 1px solid #555;">Date</th>
+                <th style="padding: 10px; border: 1px solid #555;">Name</th>
+                <th style="padding: 10px; border: 1px solid #555;">Email</th>
+                <th style="padding: 10px; border: 1px solid #555;">Message</th>
+                <th style="padding: 10px; border: 1px solid #555;">Action</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for mail in mail %}
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ccc;">{{ loop.index }}</td>
+                <td style="padding: 10px; border: 1px solid #ccc;">{{ mail.date }}</td>
+                <td style="padding: 10px; border: 1px solid #ccc;">{{ mail.name }}</td>
+                <td style="padding: 10px; border: 1px solid #ccc;">{{ mail.email }}</td>
+                <td style="padding: 10px; border: 1px solid #ccc;">{{ mail.message }}</td>
+                <td>
+                <form action="{{ url_for('delete_message', message_id=mail.id) }}" method="POST" style="display: inline;">
+                    <button type="submit"
+                            onclick="return confirm('Are you sure you want to delete this message?');"
+                            style="background-color: rgb(33, 32, 32); color: rgb(255, 0, 0); border: 1px solid rgb(31, 31, 31);"
+                            class="btn">
+                        🗑 Reject
+                    </button>
+                </form>
+
+
+         <a href="{{ url_for('respond_message', message_id=mail.id) }}" class="btn btn-primary" style="color: rgb(94, 247, 78);">
+        ✉️ Respond
+    </a>
+</td>
+
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 15px;">No messages found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+    <br>
+    <center><a href="{{ url_for('admin_logout') }}">Logout</a></center>
+</div>
+
+    <br>
+    
+</div>
+
+<script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>

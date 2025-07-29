@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - E-Shop{% endblock %}
+
+{% block content %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message {{ category }}">
+                    <h4 style="color: rgb(0, 255, 13);">{{ message }}</h4>
+                </div>
+            {% endfor %}
+            <script>
+                // Hide flash message after 3 seconds
+                setTimeout(function() {
+                    document.querySelectorAll('.flash-message').forEach(function(el) {
+                        el.style.display = 'none';
+                    });
+                }, 3000);
+            </script>
+        {% endif %}
+    {% endwith %}
+
+    <div class="product-details container">
+        <h2>{{ product.name }}</h2>
+        <img src="{{ url_for('static', filename='product_images/' ~ product.image) }}" alt="{{ product.name }}" height="300" width="300">
+
+        <div>
+            <form id="ratingForm" action="" method="POST">
+                <div class="star-rating">
+                    <style>
+                        .star-rating input[type="radio"] + label {
+                            font-size: 3.5rem; /* Increase star size */
+                            cursor: pointer;
+                        }
+                    </style>
+                    <input type="radio" id="star5" name="rating" value="5" onchange="autoSubmit()"><label for="star5">&#9733;</label>
+                    <input type="radio" id="star4" name="rating" value="4" onchange="autoSubmit()"><label for="star4">&#9733;</label>
+                    <input type="radio" id="star3" name="rating" value="3" onchange="autoSubmit()"><label for="star3">&#9733;</label>
+                    <input type="radio" id="star2" name="rating" value="2" onchange="autoSubmit()"><label for="star2">&#9733;</label>
+                    <input type="radio" id="star1" name="rating" value="1" onchange="autoSubmit()"><label for="star1">&#9733;</label>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+{% endblock %}

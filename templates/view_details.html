@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - E-Shop{% endblock %}
+
+{% block content %}
+
+
+<div class="product-details container">
+    <h2>{{ product.name }}</h2>
+    <img src="{{ url_for('static', filename='product_images/' ~ product.image) }}" alt="{{ product.name }}" height="300" width="300">
+    
+    <p style="color:rgb(163, 163, 163);">{{product.description}}</p>
+    <p>
+        <strong><h3 style="color: #fff;">₹ {{ product.discounted_price }}</h3> </strong>
+    </p>
+    <del style="color: rgb(235, 144, 144);">₹{{ product.price }}</del>
+    <strong style="color: greenyellow;">{{ product.offer }}% OFF</strong>
+    <br>
+    <div class="star-rating">
+        {% for i in range(5, 0, -1) %}
+            {% if i <= product.rating|round(0, 'floor') %}
+                <span style="color: gold;">&#9733;</span>
+            {% else %}
+                <span style="color: lightgray;">&#9733;</span>
+            {% endif %}
+        {% endfor %}
+        
+    </div>
+    <span style="color: #fff; font-size: 1.6em;"> ({{ product.rating_count}})</span>
+    <div class="product-actions">
+        <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST">
+            <button type="submit" class="add-to-cart-btn">
+                <i class="fas fa-cart-plus"></i> Add to Cart
+            </button>
+        </form>
+        <br>
+       {% if current_user.is_authenticated %}
+            <form action="{{ url_for('checkout', product_id=product.id, user_id=current_user.id) }}" method="POST">
+                <button type="submit" class="buy-now-btn">
+                    <i class="fas fa-bolt"></i> Buy Now
+                </button>
+            </form>
+       {% else %}
+            <a href="{{ url_for('login') }}  ">
+                <button type="submit" class="buy-now-btn">
+                    <i class="fas fa-bolt"></i> Buy Now
+                </button>
+            </a>
+            <br>
+        {% endif %}
+
+        <br>
+        <button onclick="refreshBack()">⬅ Back</button>
+    </div>
+
+    <!-- Recommended Products Section -->
+    <section class="product-section container">
+        <div class="section-header">
+            {% if recommended_products %}
+            <h2 style="color: #fff957ea;">🔄 Similar Products Just for You</h2>
+            <br>
+            {% endif %}
+        </div>
+        <div class="product-grid">
+            {% if recommended_products %}
+                {% for product in recommended_products %}
+                <a href="{{ url_for('view_details', product_id=product.id) }}" class="product-link">
+                    <div class="product-card" style="height: 750px;">
+                        <p style="color: #888; font-size: 14px; margin-bottom: 10px; text-align: left;">
+                            {{ product.category }}
+                        </p>
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename='product_images/' ~ product.image) }}" alt="{{ product.name }}">
+                        </div>
+                         <p style="color: #888; font-size: 14px; margin-bottom: 10px; text-align: left;">
+                           {% if product.brand != "Unknown" %}
+                                {{ product.brand }}
+                            {% endif %}
+
+                        </p>
+
+                        <div class="product-info" style="height: 350px; display: flex; flex-direction: column; justify-content: space-between; padding: 10px;">
+                            <div style="flex-grow: 1;">
+                                <div style="height: 220px; width: 220px;">
+                                    <br>
+                                    <h3>{{ product.name[:130] }}{% if product.name|length > 100 %}...{% endif %}</h3>
+                                    <div class="star-rating">
+                                        {% for i in range(5, 0, -1) %}
+                                            {% if i <= product.rating|round(0, 'floor') %}
+                                                <span style="color: gold;">&#9733;</span>
+                                            {% else %}
+                                                <span style="color: lightgray;">&#9733;</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <p class="description">
+                                        {{ product.description[:0] }}{% if product.description|length > 100 %}{% endif %}
+                                    </p>
+                                    <h6>{{ product.sub_category[:0] }}</h6>
+                                    <!-- Hidden values for search -->
+                                    <div class="hidden-data" style="display: none;">
+                                        {{ product.name }}
+                                        {{ product.description }}
+                                        {{ product.sub_category }}
+                                    </div>
+                    
+                                </div>
+                            </div>
+                            <div class="product-actions">
+                            <p>
+                                <strong><h4 style="color: #fff;">₹ {{ product.discounted_price }}</h4> </strong>
+                            </p>
+                            <del style="color: rgb(235, 144, 144);">₹{{ product.price }}</del>
+                            <strong style="color: greenyellow;">{{ product.offer }}% OFF</strong>
+                            <p style="color: green;">You save ₹<span id="discountDisplay">{{ (product.price - product.discounted_price) | round(2) }}</span></p>
+                                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST">
+                                    <button type="submit" class="add-to-cart-btn">
+                                        <i class="fas fa-cart-plus"></i> Add to Cart
+                                    </button>
+                                </form>
+                                <br>
+                                <form action="{{ url_for('view_details', product_id=product.id) }}" method="GET">
+                                    <button type="submit" class="buy-now-btn">
+                                        View Details
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div></a>
+                {% endfor %}
+            {% else %}
+                <p class="no-products">No recommendations available.</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<!-- <form action="{{ url_for('view_details', product_id=product.id) }}" method="GET" class="home-button">
+    <input type="hidden" name="more" value="True">
+    <button type="submit" type="button">More...</button>
+</form> -->
+
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}

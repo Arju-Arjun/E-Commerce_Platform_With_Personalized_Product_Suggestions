@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                <script>
+                    // Hide flash message after 5 seconds
+                    setTimeout(function() {
+                        document.querySelectorAll('.flash-message').forEach(function(el) {
+                            el.style.display = 'none';
+                        });
+                    }, 1000);
+                </script>
+            {% endif %}
+        {% endwith %}
+
+    
+    <h1>Edit Product</h1>
+    <form action="{{ url_for('edit_product', product_id=product.id) }}" method="POST" enctype="multipart/form-data">
+        <label for="name">Name</label>
+
+        <input type="text" id="name" name="name" value="{{ product.name }}" required>
+
+        <label for="description">Description</label>
+        <textarea id="description" name="description">{{ product.description }}</textarea>
+
+            
+        
+    <br><br><label for="category">Category</label>
+        <input list="category-options"
+            id="category"
+            name="category"
+            value="{{ product.category }}"
+            placeholder="Enter Category"
+            style="width: 1230px; height: 40px; color: white; background-color: rgb(37, 35, 35); border: 1px solid rgb(105, 105, 105);">
+            
+        <datalist id="category-options">
+            {% for category in category %}
+                <option value="{{ category }}">
+            {% endfor %}
+        </datalist>
+        <br>
+
+
+
+        <label for="sub_category">Sub Category</label>
+        <input type="text" id="sub_category" name="sub_category" value="{{ product.sub_category }}">
+
+
+        <br><br>
+        <label for="brand">Brand</label>
+        {% if account_type == "admin" %}
+        <input list="brand-options" id="brand" name="brand" value="{{ product.brand }}" placeholder="Enter Brand" style="width: 1230px; height: 40px; color: white; background-color: rgb(37, 35, 35); border: 1px solid rgb(105, 105, 105);">
+
+        <datalist id="brand-options">
+            {% for b in brand %}
+                <option value="{{ b }}">
+            {% endfor %}
+        </datalist>
+        <br>
+        {% else %}
+        <input list="brand-options" id="brand" name="brand" value="{{ product.brand }}"  style="width: 1230px; height: 40px; color: white; background-color: rgb(37, 35, 35); border: 1px solid rgb(105, 105, 105);" readonly>
+        <br>
+        {% endif %}
+
+
+
+        <label for="stock">Stock Available</label>
+        <select id="stock" name="stock" required>
+            <option value="available" {% if product.stock == 'available' %}selected{% endif %}>Yes</option>
+            <option value="not_available" {% if product.stock == 'not_available' %}selected{% endif %}>No</option>
+        </select>
+
+        <label for="price">Price</label>
+        <input type="number" id="price" name="price" value="{{ product.price }}" required>
+        <label for="offer">Offer (%)</label>
+        <input type="number" id="offer" name="offer" value="{{ product.offer }}" min="0" max="100">
+
+        <label for="image">Image</label>
+        <input type="file" id="image" name="image" accept="image/png,image/jpeg,image/gif">
+
+        {% if product.image_url %}
+        <div>
+            <img src="{{ url_for('static', filename=product.image_url) }}" alt="Product Image" style="max-width: 200px; max-height: 200px;">
+        </div>
+        {% endif %}
+
+        <button type="submit">Update Product</button>
+    </form>
+    </div>
+</body>
+</html>

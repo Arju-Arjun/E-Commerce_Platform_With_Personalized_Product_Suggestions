@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - E-Shop{% endblock %}
+
+{% block content %}
+    {% if name %}
+        <section class="welcome-section container">
+            <h1 style="color: #f3ce00;">Welcome, {{ name }}!</h1>
+            <p>Explore our wide range of products below.</p>
+        </section>
+    {% else %}
+        <section class="welcome-section container">
+            <h1 style="color: #f3ce00;">Welcome To E-Commerce Platform</h1>
+            <p>Explore our wide range of products below.</p>
+        </section>
+    {% endif %}
+
+    <br><br>
+    <div class="product-card">
+        <div class="slideshow-container">
+            {% if recommended_products %}
+                <br>
+                <a href="{{ url_for('recommend') }}">
+                    <h2 class="section-heading">🛍 Recommended Just For You</h2>
+                </a>
+                <br>
+                {% for product in recommended_products %}
+                    <div class="mySlides fade">
+                        <a href="{{ url_for('view_details', product_id=product.id) }}">
+                            <img src="{{ url_for('static', filename='product_images/' ~ product.image) }}">
+                        </a>
+                        <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+                        <a class="next" onclick="plusSlides(1)">&#10095;</a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <br>
+                <h2 class="section-heading" onclick="document.getElementById('available-products').scrollIntoView({ behavior: 'smooth' });">
+                    🛒 Most Popular Products 🛒
+                </h2>
+                <br>
+                {% for i in range(3) %}
+                    {% if product_slideshow %}
+                        {% set r = choice(product_slideshow) %}
+                        {% set r_id = r.id %}
+                        <div class="mySlides fade">
+                            <div class="numbertext">{{ i + 1 }} / 3</div>
+                            <a href="{{ url_for('view_details', product_id=r_id) }}">
+                                <img src="{{ url_for('static', filename='product_images/' ~ r.image) }}">
+                            </a>
+                            <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+                            <a class="next" onclick="plusSlides(1)">&#10095;</a>
+                        </div>
+                    {% else %}
+                        <h3>Empty</h3>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <section id="available-products" class="product-section container">
+        <div class="section-header">
+            <h2>Available Products</h2>
+            <div class="search-filter">
+                <input type="text" id="search" placeholder="Search products..." class="search-bar">
+            </div>
+        </div>
+        <!-- Category Filter Dropdown -->
+        <form action="{{ url_for('dashboard') }}" method="GET" style="margin-bottom: 20px;">
+            <label for="category" style="color: #fff;">Filter by Category:</label>
+            <select name="category" id="category" required onchange="this.form.submit()">
+                <option value="all" {% if request.args.get('category') == 'all' or not request.args.get('category') %}selected{% endif %}>All</option>
+                <option value="Electronics" {% if request.args.get('category') == 'Electronics' %}selected{% endif %}>Electronics</option>
+                <option value="Kitchen Appliances" {% if request.args.get('category') == 'Kitchen Appliances' %}selected{% endif %}>Kitchen Appliances</option>
+                <option value="Fashion" {% if request.args.get('category') == 'Fashion' %}selected{% endif %}>Fashion</option>
+                <option value="Home Appliances" {% if request.args.get('category') == 'Home Appliances' %}selected{% endif %}>Home Appliances</option>
+                <option value="Mobile accessory" {% if request.args.get('category') == 'Mobile Accessory' %}selected{% endif %}>Mobile Accessory</option>
+                <option value="Toys" {% if request.args.get('category') == 'Toys' %}selected{% endif %}>Toys</option>
+            </select>
+        </form>
+
+        <div class="product-grid" >
+            {% if hybrid_products %}
+                {% for product in hybrid_products %}
+                <a href="{{ url_for('view_details', product_id=product.id) }}" class="product-link">
+                    <div class="product-card" style="height: 750px;">
+                        <p style="color: #888; font-size: 14px; margin-bottom: 10px; text-align: left;">
+                            {{ product.category }}
+                        </p>
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename='product_images/' ~ product.image) }}" alt="{{ product.name }}">
+                        </div>
+                         <p style="color: #888; font-size: 14px; margin-bottom: 10px; text-align: left;">
+                           {% if product.brand != "Unknown" %}
+                                {{ product.brand }}
+                            {% endif %}
+
+                        </p>
+
+                        <div class="product-info" style="height: 350px; display: flex; flex-direction: column; justify-content: space-between; padding: 10px;">
+                            <div style="flex-grow: 1;">
+                                <div style="height: 220px; width: 220px;">
+                                    <br>
+                                    <h3>{{ product.name[:130] }}{% if product.name|length > 100 %}...{% endif %}</h3>
+                                    <div class="star-rating">
+                                        {% for i in range(5, 0, -1) %}
+                                            {% if i <= product.rating|round(0, 'floor') %}
+                                                <span style="color: gold;">&#9733;</span>
+                                            {% else %}
+                                                <span style="color: lightgray;">&#9733;</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <p class="description">
+                                        {{ product.description[:0] }}{% if product.description|length > 100 %}{% endif %}
+                                    </p>
+                                    <h6>{{ product.sub_category[:0] }}</h6>
+                                    <!-- Hidden values for search -->
+                                    <div class="hidden-data" style="display: none;">
+                                        {{ product.name }}
+                                        {{ product.description }}
+                                        {{ product.sub_category }}
+                                    </div>
+                    
+                                </div>
+                            </div>
+                            <div class="product-actions">
+                            <p>
+                                <strong><h4 style="color: #fff;">₹ {{ product.discounted_price }}</h4> </strong>
+                            </p>
+                            <del style="color: rgb(235, 144, 144);">₹{{ product.price }}</del>
+                            <strong style="color: greenyellow;">{{ product.offer }}% OFF</strong>
+                            <p style="color: green;">You save ₹<span id="discountDisplay">{{ (product.price - product.discounted_price) | round(2) }}</span></p>
+                                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST">
+                                    <button type="submit" class="add-to-cart-btn">
+                                        <i class="fas fa-cart-plus"></i> Add to Cart
+                                    </button>
+                                </form>
+                                <br>
+                                <form action="{{ url_for('view_details', product_id=product.id) }}" method="GET">
+                                    <button type="submit" class="buy-now-btn">
+                                        View Details
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div></a>
+                {% endfor %}
+            {% else %}
+                <p class="no-products">No products available at the moment.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+{% endblock %}

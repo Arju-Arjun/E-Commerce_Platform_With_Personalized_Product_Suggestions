@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart - E-Shop{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if cart_items %}
+    <h1>Your Shopping Cart</h1>
+
+    <table class="cart-table">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for item in cart_items %}
+        <tr>
+            <td>
+                <a href="{{ url_for('view_details', product_id=item.product.id) }}" class="product-link">
+                    <img src="{{ url_for('static', filename='product_images/' ~ item.product.image) }}" alt="{{ item.product.name }}" width="150">
+                </a>
+            </td>
+            <td style="width: 500px; height: 150px; text-align: center; white-space: normal; word-break: break-word;">
+                <a href="{{ url_for('view_details', product_id=item.product.id) }}" class="product-link">
+                    {{ item.product.name[:100] }}...
+                </a>
+            </td>
+            <td style="text-align: center;">₹{{ item.product.discounted_price or 0 }}</td>
+            <td style="text-align: center;">{{ item.quantity }}</td>
+            <td style="text-align: center;">₹{{ (item.product.discounted_price or 0) * item.quantity }}</td>
+            <td style="text-align: center;">
+                <form id="remove_form_{{ item.id }}" action="{{ url_for('remove_from_cart', cart_item_id=item.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="remove-btn" onclick="return confirm('Are you sure you want to remove this item?');">
+                        Remove
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Total Price -->
+    <h2 id="cart_total">Total: ₹{{ total }}</h2>
+
+    <!-- Buy All Button -->
+    <form action="{{ url_for('checkout_bulk', user_id=current_user.id) }}" method="GET">
+        <button type="submit" class="buy-now-btn">
+            <i class="fas fa-bolt"></i> Buy All
+        </button>
+    </form>
+
+    <!-- Clear Cart Button -->
+    <form action="{{ url_for('clear_cart', user_id=current_user.id) }}" method="POST">
+        <br>
+        <button type="submit" class="clear-cart-btn" onclick="return confirm('Are you sure you want to clear your cart?');">
+            Clear Cart
+        </button>
+    </form>
+
+    {% else %}
+    <div style="
+        position: relative;
+        width: 100%;
+        padding: 100px 20px;
+        border-radius: 16px;
+        text-align: center;
+        color: white;
+        overflow: hidden;
+    ">
+        <!-- Background Image -->
+        <div style="background-image: url('{{ url_for('static', filename='background/empty_cart_bg.jpg') }}');
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.05;
+                    position: absolute;
+                    top: 0; left: 0;
+                    width: 100%; height: 100%;
+                    z-index: 0;">
+        </div>
+
+        <!-- Foreground Content -->
+        <div style="position: relative; z-index: 1;">
+            <h2 style="color: rgb(247, 247, 247);">Your cart is empty!</h2>
+            <h4 style="color: rgb(247, 247, 247);">Add items to it now.</h4>
+            <br>
+            <a href="{{ url_for('index') }}" 
+               style="display: inline-block; margin-top: 20px; padding: 12px 24px;
+                      background-color: #0004ff; color: white; text-decoration: none;
+                      border-radius: 8px; font-weight: bold;">
+               Shop Now
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

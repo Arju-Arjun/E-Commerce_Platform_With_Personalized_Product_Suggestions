@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders History - E-Shop</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div id="menuIcon" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+</div>
+
+<header class="header">
+    <div class="sidebar" id="sidebar">
+        <a href="{{ url_for('dashboard') }}" class="logo"><h1>E-Shop</h1></a>
+        <nav class="sidebar-menu">
+            <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><i class="fas fa-home"></i> Home</a>
+            <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}"><i class="fas fa-th-large"></i>Shop by Category</a>
+            <a href="{{ url_for('profile') }}" class="{% if request.endpoint == 'profile' %}active{% endif %}"><i class="fas fa-user"></i> Profile</a>
+            <a href="{{ url_for('cart') }}" class="{% if request.endpoint == 'cart' %}active{% endif %}"><i class="fas fa-shopping-cart"></i> Cart</a>
+            <a href="{{ url_for('orders_history') }}" class="{% if request.endpoint == 'orders_history' %}active{% endif %}"><i class="fas fa-history"></i> Orders History</a>
+            <a href="{{ url_for('contact') }}" class="{% if request.endpoint == 'contact' %}active{% endif %}"><i class="fas fa-envelope"></i> Contact Us</a>
+            <a href="{{ url_for('about') }}" class="{% if request.endpoint == 'about' %}active{% endif %}"><i class="fas fa-info-circle"></i> About Us</a>
+            <a href="{{ url_for('logout') }}" class="{% if request.endpoint == 'logout' %}active{% endif %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container" style="max-width:1800px; margin:auto; padding:30px;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                <script>
+                    // Hide flash message after 5 seconds
+                    setTimeout(function() {
+                        document.querySelectorAll('.flash-message').forEach(function(el) {
+                            el.style.display = 'none';
+                        });
+                    }, 1000);
+                </script>
+            {% endif %}
+            {% endwith %}
+
+
+
+    <section class="orders-history container" style="max-width:1800px; margin:auto; padding:30px;">
+        <h2>Your Orders History</h2>
+        {% if orders %}
+        <table style="width: auto; height:auto; border-collapse: collapse; margin-top: 20px; background-color: #1f1f1f; color: white;">
+            <thead>
+                <tr style="background-color: #333;">
+                    <th style="padding: 10px;">Product</th>
+                    <th style="padding: 10px;">Order ID</th>
+                    <th style="padding: 10px;">Order Date</th>
+                    <th style="padding: 10px;">Expected Delivery</th>
+                    <th style="padding: 10px;">Delivery Address</th>
+                    <th style="padding: 10px;">Payment Method</th>
+                    <th style="padding: 10px;">Payment Status</th>
+                    <th style="padding: 10px;">Product Price (₹)</th>
+                    <th style="padding: 10px;">Quantity</th>
+                    <th style="padding: 10px;">Delivery Charge (₹)</th>
+                    <th style="padding: 10px;">Total Amount (₹)</th>
+                    <th style="padding: 10px;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr style="border-bottom: 1px solid #444;">
+                    <td style="text-align: center; padding: 18px;">
+                        <a href="{{ url_for('rating', product_id=order.product.id, order_id=order.id) }}" class="product-link">
+                            <img src="{{ url_for('static', filename='product_images/' ~ order.img) }}" alt="{{ order.product.name }}" style="width: 200px; height: 200px; object-fit: cover;">
+                           <br> <a href="{{ url_for('view_details', product_id=order.product.id) }}" class="product-link">{{ order.product.name[:50] }}...</a>
+                        </a>
+                    </td>
+                    <td style="padding: 10px;">{{ order.id }}</td>
+                   
+                    <td style="padding: 10px;">{{ order.order_date.strftime('%d-%m-%Y') }}</td>
+                    <td style="padding: 10px;">
+                        {% if order.status == 'Cancelled' %}
+                            <span style="color: rgb(102, 87, 87);">N/A</span>
+                        {% elif order.delivery_date %}
+                            {{ order.delivery_date.strftime('%d-%m-%Y') }}
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </td>
+
+
+                    {% if order.quantities == 0 %} 
+                    <td style="padding: 10px; color: rgb(102, 87, 87);">N/A</td>
+                    {% else %}
+                    <td style="padding: 10px;">{{ order.delivery_details[:50] }}...</td>
+                    {% endif %}
+
+                    {% if order.payment_method == None %}
+                    <td style="padding: 10px; color: rgb(102, 87, 87);">N/A</td>
+                    {% else %}
+                    <td style="padding: 10px;">{{ order.payment_method }}</td>
+                    {% endif %}
+                    <td style="padding: 10px;">
+
+
+                    {% if order.quantities == 0 %}
+                        <span style="color: rgb(102, 87, 87);">N/A</span>
+                    {% else %}
+                    {% if order.payment_method == "UPI"  %}
+                        <span style="color: green;">Paid</span>
+                    {% else %}
+                        
+                        {% if order.delivery_date %}
+                            {% if order.delivery_date > datetime.now() %}
+                                <span style="color: red;">Processing</span>
+                            {% elif order.delivery_date and (order.delivery_date > datetime.now()) and order.payment_method == 'Cash on Delivery' %}
+                                <span style="color: rgb(174, 120, 49);">Pending</span>
+                            {% else %}
+                                <span style="color: green;">Paid</span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: rgb(174, 120, 49);">Pending</span>
+                        {% endif %}
+                    {% endif %}
+                    {% endif %}
+                    </td>
+
+                    {% if order.amount == 0 %}
+                    <td style="padding: 10px; color: rgb(102, 87, 87);">N/A</td>
+                    {% else %}
+                    <td style="padding: 10px;"><p><strong>&nbsp;<del  style="color: rgb(104, 104, 104);">₹{{ order.product.price }}</del>&nbsp;₹<span  id="priceDisplay" style="color: #fff;">{{ order.product.discounted_price }}</span></strong> </p>
+                     {% endif %}
+
+
+
+                    {% if order.quantities == 0 %}
+                    <td style="padding: 10px; color: rgb(102, 87, 87);">N/A</td>
+                    {% else %}
+                     <td style="padding: 10px;">{{ order.quantities|int }}</td>
+                    {% endif %}
+
+
+                    {% if order.delivery_charge == 0  and order.status != 'Cancelled' %}
+                    <td><p>&nbsp;<del style="color: rgb(114, 114, 114);">₹30</del><strong><span id="priceDisplay" style="color: #52d715d7;"> &nbsp;Free</span></strong></p></td>
+                    {% elif order.delivery_charge== 0 %}
+                    <td style="padding: 10px; color:  rgb(102, 87, 87);">N/A</td>
+                    {% else %}
+                    <td style="padding: 10px;">₹{{ order.delivery_charge or 0 }}</td>
+                    {% endif %}
+
+
+
+                    {% if order.quantities == 0 %}  
+                    <td style="padding: 10px; color: rgb(102, 87, 87);">N/A</td>
+                    {% else %}  
+                    <td style="padding: 10px;">₹{{ (((order.amount or 0) * (order.quantities or 0)) + (order.delivery_charge or 0)) +5 | round(2) }}</td>
+                    {% endif %}
+
+
+`
+
+                    <td style="padding: 10px;">
+                        {% if order.status == 'Processing' %}
+                            <span style="color: rgb(211, 238, 37);">Processing..</span>
+                        {% elif order.status == 'Cancelled' %}
+                            <span style="color: rgb(255, 0, 0);">Cancelled
+                        {% else %}
+                            <span style="color: #51ff00;">{{ order.status }}</span>
+                        {% endif %}
+
+
+                        {% if order.status != 'Cancelled' and order.status != 'Delivered' %}
+                        <form id="remove_form_{{ order.id }}" action="{{ url_for('cancell_order', order_item_id=order.id) }}" method="POST">
+                            <button type="submit" style="background: none; border: none; color: red; cursor: pointer;" onclick="return confirm('Are you sure you want to cancel this order?');">Cancel Order</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>No orders found.</p>
+        {% endif %}
+    </section>
+</main>
+
+<div class="container">
+    <p>© 2025 E-Shop. All rights reserved.</p>
+    <div class="footer-links">
+        <a href="{{ url_for('about') }}">About Us</a>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='scripts.js') }}"></script>
+<script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('show');
+}
+</script>
+</body>
+</html>

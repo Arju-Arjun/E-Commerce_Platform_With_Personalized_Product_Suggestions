@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: auto; padding: 20px;">
+    <h2 style="text-align: center;">🛒 Order Summary</h2>
+
+    <form method="POST" action="{{ url_for('place_order', user_id=current_user.id) }}">
+        <div style="border: 1px solid #ccc; border-radius: 10px; padding: 20px; margin-top: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+
+            <!-- Delivery Address -->
+            <div style="margin-bottom: 20px; text-align:left;">
+                <h4>Deliver to:</h4>
+                <p><strong>{{ user.name }}</strong><br>{{ address }}<br>{{ user.phone }}</p>
+                <a href="{{ url_for('edit_address', next=request.path) }}" style="color: blue;">Change</a>
+            </div>
+
+            <!-- Product Cards -->
+            {% for product in products %}
+            <div style="display: flex; gap: 20px; align-items: flex-start; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                <!-- Image -->
+                <div style="flex-shrink: 0; border: 1px solid #ccc; padding: 10px; border-radius: 10px; background: #f9f9f9;">
+                    <img src="{{ url_for('static', filename='product_images/' ~ product.image) }}" alt="{{ product.name }}" style="width: 120px; height: 150px; object-fit: contain;">
+                </div>
+
+                <!-- Info -->
+                <div style="flex-grow: 1;">
+                    <h5 style="margin-bottom: 5px;">{{ product.name }}</h5>
+                    <p style="margin: 0;"><strong>₹<span id="priceDisplay_{{ product.id }}">{{ product.discounted_price }}</span></strong> <del style="color: grey;">₹{{ product.price }}</del></p>
+                    <p style="color: green;">You save ₹<span id="discountDisplay_{{ product.id }}">{{ (product.price - product.discounted_price) | round(2) }}</span></p>
+                    <p style="margin: 0;">Delivery by: <strong>{{ delivery_date }}</strong></p>
+                    <br>
+                    <div style="margin-top: 10px; display: flex; align-items: center;">
+                        <label for="quantity_{{ product.id }}" style="margin-right: 10px; margin-bottom: 0;"><strong>Quantity:</strong></label>
+                        <input type="hidden" name="product_ids" value="{{ product.id }}">
+                        <input type="number" id="quantity_{{ product.id }}"  name="quantities" value="1"  min="1" max="10" class="form-control quantity-input" data-product-id="{{ product.id }}" style="width: 80px;">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Price Details -->
+            <div style="margin-top: 20px;">
+                <h4>Price Details</h4>
+                <table style="width: 100%; margin-top: 10px;">
+                    <tr>
+                        <td>Price (<span id="itemCount">{{ cart_items|length }}</span> items)</td>
+                        <td style="text-align: right;">₹<span id="totalPrice">{{ cart_items|map(attribute='discounted_price')|sum | round(2) }}</span></td>
+                    </tr>
+                    <tr>
+                        <td>Discount</td>
+                        <td style="text-align: right; color: green;">- ₹<span id="totalDiscount">{{ (cart_items|map(attribute='price')|sum - cart_items|map(attribute='discounted_price')|sum) | round(2) }}</span></td>
+                    </tr>
+                    <tr>
+                        <td>Platform Fee</td>
+                        <td style="text-align: right;">₹<span id="platformFee">{{ platform_fee }}</span></td>
+                    </tr>
+                    <tr>
+                        <td>Delivery Charge</td>
+                        <td style="text-align: right;"><span id="deliveryCharge"></span></td>
+                    </tr>
+                    <tr style="font-weight: bold; border-top: 1px solid #ccc;">
+                        <td>Total Amount</td>
+                        <td style="text-align: right;">₹<span id="grandTotal">{{ (cart_items|map(attribute='discounted_price')|sum + platform_fee + delivery_charge) | round(2) }}</span></td>
+                    </tr>
+                    
+                </table>
+            </div>
+
+            <!-- Payment -->
+            <label><strong>Payment Method</strong></label>
+            <select name="payment_method" class="form-control" style="margin-bottom: 15px;" required>
+                <option value="Cash on Delivery">Cash on Delivery</option>
+                <option value="UPI">UPI</option>
+                <option value="Credit Card">Credit Card</option>
+            </select>
+
+            <button type="submit" class="btn btn-warning" style="width: 100%;" onclick="return confirm('Are you sure you want to place this order?')">
+    Continue
+</button>
+
+        </div>
+    </form>
+</div>
+
+<!-- ✅ JavaScript -->
+<script>
+    const products = [
+        {% for product in products %}
+        {
+            id: {{ product.id }},
+            price: {{ product.price|float }},
+            discounted: {{ product.discounted_price|float }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    const platformFee = {{ platform_fee|float }};
+    const deliveryThreshold = 1000;
+    const deliveryChargeBelowThreshold = 30;
+
+    function updatePriceDetails() {
+        let totalItems = 0;
+        let totalPrice = 0;
+        let totalDiscount = 0;
+
+        products.forEach(product => {
+            const qtyInput = document.getElementById(`quantity_${product.id}`);
+            const qty = parseInt(qtyInput.value) || 1;
+            totalItems += qty;
+
+            const productTotalPrice = product.discounted * qty;
+            const productTotalDiscount = (product.price - product.discounted) * qty;
+
+            document.getElementById(`priceDisplay_${product.id}`).innerText = productTotalPrice.toFixed(2);
+            document.getElementById(`discountDisplay_${product.id}`).innerText = productTotalDiscount.toFixed(2);
+
+            totalPrice += productTotalPrice;
+            totalDiscount += productTotalDiscount;
+        });
+
+        const deliveryCharge = totalPrice >= deliveryThreshold ? 0 : deliveryChargeBelowThreshold;
+        const grandTotal = totalPrice + platformFee + deliveryCharge;
+
+        document.getElementById("itemCount").innerText = totalItems;
+        document.getElementById("totalPrice").innerText = totalPrice.toFixed(2);
+        document.getElementById("totalDiscount").innerText = totalDiscount.toFixed(2);
+
+        const deliveryChargeEl = document.getElementById("deliveryCharge");
+        if (deliveryCharge === 0) {
+            deliveryChargeEl.innerText = "Free";
+            deliveryChargeEl.style.color = "green";
+        } else {
+            deliveryChargeEl.innerText = "₹" + deliveryCharge.toFixed(2);
+            deliveryChargeEl.style.color = "white";
+        }
+
+        document.getElementById("grandTotal").innerText = grandTotal.toFixed(2);
+    }
+
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('input', updatePriceDetails);
+    });
+
+    updatePriceDetails();
+</script>
+
+
+{% endblock %}

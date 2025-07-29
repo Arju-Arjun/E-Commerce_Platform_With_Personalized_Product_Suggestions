@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - E-Shop{% endblock %}
+
+{% block content %}
+    <style>
+        /* Circular profile picture */
+        #profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        /* Hide the file input */
+        #file-input {
+            display: none; /* Completely hides the "Choose File" button */
+        }
+
+        /* Style the profile actions container */
+        .profile-actions {
+            display: flex;
+            gap: 15px; /* Space between logout link and back button */
+            margin-top: 20px;
+            align-items: center; /* Vertically align items */
+        }
+
+        /* Style the logout link */
+        .profile-link {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .profile-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Style the back button */
+        .back-btn {
+            padding: 8px 15px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background-color: #f11313;
+        }
+    </style>
+
+    <div class="container">
+
+    
+
+        <h2>Your Profile</h2>
+        
+        <!-- Profile Picture Upload Form -->
+        <form id="upload-form" action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
+            <label for="file-input">
+                <img id="profile-pic" src="{{ url_for('static', filename='profile_pics/' + (current_user.image or 'default.jpg')) }}" alt="Profile Picture">
+            </label>
+            <input id="file-input" type="file" name="profile_pic" accept="image/*" onchange="document.getElementById('upload-form').submit();">
+        </form>
+
+        <!-- Profile Information -->
+        <div class="profile-info">
+            <p><strong>User ID:</strong> {{ user_id + 1000 }}</p>
+            <p><strong>Name:</strong> {{ name }}</p>
+            <p><strong>Phone:</strong> {{ phone }}</p>
+            <p><strong>Email:</strong> {{ email }}</p>
+            <p class="location"><strong>Location:</strong> <span>{{ location }}</span></p>
+        </div>
+<div style="margin-bottom: 20px; text-align:left;">
+<a href="{{ url_for('edit_address', next=request.path) }}" style="color: blue;">Change</a>
+</div>
+        <!-- Logout and Back Buttons -->
+        <div class="profile-actions">
+            <a href="{{ url_for('logout') }}" class="profile-link">Logout</a>
+            <a href="{{ url_for('dashboard') }}" class="back-btn">Back</a>
+        </div>
+    </div>
+{% endblock %}

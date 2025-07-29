@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- flash message display -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                <script>
+                    // Hide flash message after 5 seconds
+                    setTimeout(function() {
+                        document.querySelectorAll('.flash-message').forEach(function(el) {
+                            el.style.display = 'none';
+                        });
+                    }, 5000);
+                </script>
+            {% endif %}
+        {% endwith %}
+
+        <h2>Register</h2>
+        <form method="POST" action="{{ url_for('register') }}">
+            <label>Name:</label><br>
+            <input type="text" name="name" placeholder="Name" maxlength="18"><br>
+
+            <label>Email :</label><br>
+            <input type="email" name="email" placeholder="example@example.com" maxlength="120" required><br>
+
+            <label>Phone :</label><br>
+            <input type="text" name="phone" placeholder="Phone number" required pattern="\d{10}" title="Enter exactly 10 digits"><br>
+           
+            <label>Location:</label><br>
+            <input type="text" name="location" id="location" placeholder="Detecting location..." required><br>
+
+            <label>Pincode:</label><br>
+            <input type="text" name="pincode" placeholder="Pincode" maxlength="6" pattern="\d{6}" title="Enter exactly 6 digits"><br>
+
+            <label>Password:</label><br>
+            <input type="password" name="password" placeholder="Password" required><br>
+
+            <button type="submit">Register</button>
+        </form>
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+    </div>
+
+    <script>
+        // Geolocation script for auto-filling location
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`, {
+                    headers: {
+                        'User-Agent': 'location-registration-app'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("location").value = data.display_name || "";
+                })
+                .catch(() => {
+                    document.getElementById("location").placeholder = "Unable to auto-detect location";
+                });
+            }, function () {
+                document.getElementById("location").placeholder = "Location access denied";
+            });
+        } else {
+            document.getElementById("location").placeholder = "Geolocation not supported";
+        }
+    </script>
+</body>
+</html>

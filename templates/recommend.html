@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="product-section container">
+    <br>
+    <h2 class="section-heading">🛍️ Recommended Just For You</h2>
+    <br>
+    <div class="product-grid">
+        {% if recommended_products %}
+            {% for product in recommended_products %}
+            <div class="product-card" style="height: 650px;">
+                <p style="color: #888; font-size: 14px; margin-bottom: 10px; text-align: left;">
+                    {{ product.category }}
+                </p>
+                <div class="product-image">
+                    <img src="{{ url_for('static', filename='product_images/' ~ product.image) }}" alt="{{ product.name }}">
+                </div>
+                <div class="product-info" style="height: 350px; display: flex; flex-direction: column; justify-content: space-between; padding: 10px;">
+                    <div style="flex-grow: 1;">
+                        <div style="height: 220px; width: 220px;">
+                            <br>
+                            <h3>
+                                {{ product.name[:100] }}{% if product.name|length > 100 %}...{% endif %}
+                            </h3>
+                            <p class="description">
+                                {{ product.description[:100] }}
+                            </p>
+                            <h6>
+                                {{ product.sub_category }}
+                            </h6>
+                            <!-- Hidden full values for search -->
+                            <div class="hidden-data" style="display: none;">
+                                {{ product.name }}
+                                {{ product.description }}
+                                {{ product.sub_category }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-actions">
+                        <h3 class="price">₹{{ product.price }}</h3>
+                        <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST">
+                            <button type="submit" class="add-to-cart-btn">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </button>
+                        </form>
+                        <br>
+                        <form action="{{ url_for('view_details', product_id=product.id) }}" method="GET">
+                            <button type="submit" class="buy-now-btn">
+                                View Details
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-products">No recommended products available at the moment.</p>
+        {% endif %}
+    </div>
+</section>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+{% endblock %}

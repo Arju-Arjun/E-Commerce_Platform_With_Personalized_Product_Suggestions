@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- flash message display -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                <script>
+                    // Hide flash message after 5 seconds
+                    setTimeout(function() {
+                        document.querySelectorAll('.flash-message').forEach(function(el) {
+                            el.style.display = 'none';
+                        });
+                    }, 4000);
+                </script>
+            {% endif %}
+        {% endwith %}
+
+        <h2>Login</h2>
+        <form method="POST" action="{{ request.url }}">
+    <div class="form-content">
+        <label>Username:</label><br>
+        <input type="text" name="username" placeholder="Phone or email" required><br><br>
+
+        <label>Password:</label><br>
+        <input type="password" name="password" placeholder="Password" required><br><br>
+
+        <button type="submit">Login</button>
+    </div>
+</form>
+
+        <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+        <a href="{{ url_for('index') }}">Skip the sign-up</a>
+    </div>
+</body>
+</html>

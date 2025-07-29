@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Details - {{ product.name }}{% endblock %}
+
+{% block content %}
+<style>
+.inline-label strong {
+  font-size: 16px; /* Increased font size for "Order Date" label */
+}
+.inline-label strong.total-amount {
+  font-size: 18px; /* Increased font size for "Total Amount" label */
+}
+</style>
+  <img src="{{ url_for('static', filename='product_images/' + product.image) }}"
+     alt="{{ product.name }}" class="product-image" height="200" width="300">
+     <br>
+     <h4 style="margin-top: 50px; margin-left: 100px;margin-right: 100px;">{{ product.name }}</h4>
+     <br>
+
+<div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; margin-left: 27%; font-size: 16px;">
+<br>
+  <div style="display: grid; grid-template-columns:auto 10px auto; row-gap: 8px;">
+
+  <div><strong>Order ID</strong></div>
+  <div>:</div>
+  <div style="text-align: left;">&nbsp;&nbsp;  {{ order.id }}</div>
+
+  <div><strong>Order Date</strong></div>
+  <div>:</div>
+  <div style="text-align: left;" >&nbsp;&nbsp;   {{ order.order_date }}</div>
+
+  <div><strong>Delivery Date</strong></div>
+  <div>:</div>
+  <div style="text-align: left;">&nbsp;&nbsp;  {{ order.delivery_date if order.delivery_date else 'Pending' }}</div>
+
+  <div><strong>Address</strong></div>
+  <div>:</div>
+  <div style="text-align: left;">&nbsp;&nbsp;  {{ order.delivery_details  }}</div>
+
+  <div><strong>Payment Method</strong></div>
+  <div>:</div>
+  <div style="text-align: left;">&nbsp;&nbsp;  {{ order.payment_method }}</div>
+
+  <div><strong>Product Price</strong></div>
+  <div>:</div>
+  <div style="text-align: left;">&nbsp;&nbsp;  ₹{{ product.discounted_price  }}</div>
+
+  <div>Quantity</div>
+  <div>:</div>  
+  <div style="text-align: left;">&nbsp;&nbsp;  {{ order.quantities | int }}</div>
+
+  <!-- <div><strong>Delivery Charge</strong></div>
+  <div>:</div>
+  <div style="text-align: left;">&nbsp;&nbsp;  ₹{{ delivery_charge }}</div> -->
+  </div>
+
+ <div class="inline-label" style="margin-top: 20px;">
+  <strong class="total-amount">Total Amount(₹)&nbsp;</strong>
+  <span>:</span>
+  <span class="price"> &nbsp;₹{{ (product.discounted_price  * order.quantities|int) + (order.delivery_charge|int) }}</span>
+</div>
+<br>
+  
+  
+</div>
+<center>
+<a href="{{ url_for('orders_history', user_id=current_user.id) }}" class="buy-now-btn">
+    <i class="fas fa-history"></i> View Your Order History
+    
+  </a>
+</center>
+<br>
+<button onclick="history.back()">Go Back</button>
+{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+{% endblock %}

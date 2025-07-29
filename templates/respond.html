@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat with {{ user.name }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px; margin-top: 30px;">
+    <h2>💬 Chat with {{ user.name }}</h2>
+    <p class="text-muted">Admin panel to view and respond</p>
+
+    <div class="chat-box" style="margin-top: 30px; margin-bottom: 30px;">
+        {% if messages %}
+            {% for msg in messages %}
+                <!-- User message -->
+                <div style="display: flex; justify-content: flex-start; margin-bottom: 15px;">
+                    <div style="background-color: #dcf8c6; padding: 12px 15px; border-radius: 15px 15px 15px 0; max-width: 70%; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <div style="font-size: 10px; color: #474747;"><strong>{{ user.name }}</strong> - {{ msg.date.strftime('%Y-%m-%d') }}</div>
+                        <div style="margin-top: 5px; color:black;">{{ msg.message }}</div>
+                        <div style="font-size: 11px; color: gray;">Email: {{ msg.email }}</div>
+                    </div>
+                </div>
+
+                {% if msg.respond_message %}
+                <!-- Admin response -->
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+                    <div style="background-color: #f1f0f0; padding: 12px 15px; border-radius: 15px 15px 0 15px; max-width: 70%; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <div style="font-size: 10px; color: #474747;"><strong>Admin</strong> - {{ msg.respond_date.strftime('%Y-%m-%d') if msg.respond_date else '' }}</div>
+                        <div style="margin-top: 5px; color:black;">{{ msg.respond_message }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">No messages yet from this user.</div>
+        {% endif %}
+    </div>
+
+    <!-- Admin response form -->
+    <form method="POST" action="{{ url_for('respond_message', message_id=last_msg_id) }}">
+        <div class="form-group">
+            <label for="response">Your Response</label>
+            <textarea id="response" name="response" class="form-control" rows="5" required placeholder="Type your response here..."></textarea>
+        </div>
+        <br>
+        <button type="submit" class="btn btn-success" style="width: 100%;">Send Response</button>
+    </form>
+</div>
+{% endblock %}

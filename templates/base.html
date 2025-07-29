@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}E-Commerce Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Menu Icon (top-left corner) -->
+    <div id="menuIcon" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="sidebar" id="sidebar">
+            <a href="{{ url_for('dashboard') }}" class="logo"><h1>E-Shop</h1></a>
+            <nav class="sidebar-menu">
+                <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><i class="fas fa-home"></i> Home</a>
+                <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}"><i class="fas fa-th-large"></i> Shop by Category</a>
+                <a href="{{ url_for('profile') }}" class="{% if request.endpoint == 'profile' %}active{% endif %}"><i class="fas fa-user"></i> Profile</a>
+                <a href="{{ url_for('cart') }}" class="{% if request.endpoint == 'cart' %}active{% endif %}"><i class="fas fa-shopping-cart"></i> Cart</a>
+                <a href="{{ url_for('orders_history') }}" class="{% if request.endpoint == 'orders_history' %}active{% endif %}"><i class="fas fa-history"></i> Orders History</a>
+                <a href="{{ url_for('contact') }}" class="{% if request.endpoint == 'contact' %}active{% endif %}"><i class="fas fa-envelope"></i> Contact Us</a>
+                <a href="{{ url_for('about') }}" class="{% if request.endpoint == 'about' %}active{% endif %}"><i class="fas fa-info-circle"></i> About Us</a>
+                <a href="{{ url_for('logout') }}" class="{% if request.endpoint == 'logout' %}active{% endif %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ✅ Mailbox Icon (Top Right) -->
+<div id="mailIcon" style="position: absolute; top: 40px; right: 40px; z-index: 10000;">
+    <a href="{{ url_for('mail') }}"
+       style="color: red; text-decoration: none;  display: flex; align-items: center; justify-content: center; width: 100px; height: 60px; border-radius: 50%;">
+        <i class="fas fa-envelope fa-2x"></i>
+    </a>
+</div>
+
+
+    <!-- Main Content -->
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            <script>
+                // Hide flash message after 5 seconds
+                setTimeout(function () {
+                    document.querySelectorAll('.flash-message').forEach(function (el) {
+                        el.style.display = 'none';
+                    });
+                }, 1000);
+            </script>
+        {% endif %}
+        {% endwith %}
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <div class="container">
+        <p>© 2025 E-Shop. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="{{ url_for('about') }}">About Us</a>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

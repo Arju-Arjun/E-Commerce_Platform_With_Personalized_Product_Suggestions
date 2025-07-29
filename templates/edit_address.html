@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: auto;">
+    <h2>Edit Delivery Address</h2>
+   <form method="POST">
+    <label for="name">Full Name:</label><br>
+    <input type="text" name="name" id="name" value="{{ current_user.name }}" required style="width: 100%;"><br><br>
+
+    
+
+
+    <label for="address">Address:</label><br>
+    <label for="house_name"><h5 style="margin: 0; color: rgb(108, 108, 108);">House Name:</h5></label>
+    <input type="text" name="house_name" id="house_name" value="{{ current_user.house_name if current_user.house_name is not none else ' ' }}" required style="width: 100%;"><br><br>
+    <label for="house_no"><h5 style="margin: 0; color: rgb(108, 108, 108);">House Number:</h5></label>
+    <input type="text" name="house_no" id="house_no" value="{{ current_user.house_no if current_user.house_no is not none else ' ' }}" required style="width: 100%;"><br><br>
+    <label for="street"><h5 style="margin: 0; color: rgb(108, 108, 108);">Street Name/Area/Locality:</h5></label>
+    <input type="text" name="street" id="street" value="{{ current_user.street if current_user.street is not none else ' ' }}" required style="width: 100%;"><br><br>
+    <label for="city"><h5 style="margin: 0; color: rgb(108, 108, 108);">Village/Town/City Name:</h5></label>
+    <input type="text" name="city" id="city" value="{{ current_user.city if current_user.city is not none else ' ' }}" required style="width: 100%;"><br><br>
+    <label for="post_office"><h5 style="margin: 0; color: rgb(108, 108, 108);">Post Office Name:</h5></label>
+    <input type="text" name="post_office" id="post_office" value="{{ current_user.post_office if current_user.post_office is not none else ' ' }}" required style="width: 100%;"><br><br>
+    <label for="pincode"><h5 style="margin: 0; color: rgb(108, 108, 108);">Pincode:</h5></label>
+    <input type="text" name="pincode" id="pincode" value="{{ current_user.pincode if current_user.pincode is not none else ' ' }}" required pattern="[0-9]{6}" maxlength="6" style="width: 100%;"><br><br>
+
+    <label for="district"><h5 style="margin: 0; color: rgb(108, 108, 108);">District Name:</h5></label>
+    <input type="text" name="district" id="district" value="{{ current_user.district if current_user.district is not none else ' ' }}" required style="width: 100%;"><br><br>
+    <label for="state"><h5 style="margin: 0; color: rgb(108, 108, 108);">State Name:</h5></label>
+    <input type="text" name="state" id="state" value="{{ current_user.state if current_user.state is not none else ' ' }}" required style="width: 100%;"><br><br>
+    <button type="submit" class="buy-now-btn">Update Address</button>
+</form>
+
+</div>
+{% endblock %}
