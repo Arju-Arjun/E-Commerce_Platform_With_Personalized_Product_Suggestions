@@ -15,15 +15,7 @@ from  sklearn.feature_extraction.text import TfidfVectorizer
 from  sklearn.metrics.pairwise import cosine_similarity
 import sqlite3
 import re
-from flask_mail import Mail
 
-app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
-app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
-app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True') == 'True'
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-
-mail = Mail(app)
 
 
 app = Flask(__name__)
@@ -604,11 +596,10 @@ def register():
     if request.method == 'POST':
         name = request.form['name']
         email = request.form.get('email')
-
-        if email and User.query.filter_by(email=email).first():
-            flash("Email already exists. Please choose a different one.", "error")
-            return redirect(url_for('register'))
-
+        if email:
+            if User.query.filter_by(email=email).first():
+                flash("Email already exists. Please choose a different one.", "error")
+                return redirect(url_for('register'))
         phone = request.form['phone']
         if not phone.isdigit() or len(phone) != 10:
             flash("Invalid phone number. It must be 10 digits long.", "error")
@@ -616,35 +607,21 @@ def register():
         if User.query.filter_by(phone=phone).first():
             flash("Phone number already exists. Please choose a different one.", "error")
             return redirect(url_for('register'))
-
+        
         location = request.form['location']
         password = request.form['password']
-        if len(password) < 8:
+
+        if len(password) <8:
             flash("Password must be at least 8 characters long.", "error")
             return redirect(url_for('register'))
-
         hashed_password = generate_password_hash(password)
 
-        # ✅ Save user to database
         new_user = User(name=name, phone=phone, password=hashed_password, email=email, location=location)
         db.session.add(new_user)
         db.session.commit()
-
-        # ✅ Email send cheyyunnathu ivide thanne
-        if email:
-            msg = Message(
-                "Welcome to Our App!",
-                sender=app.config['MAIL_USERNAME'],
-                recipients=[email]
-            )
-            msg.body = f"Hi {name},\n\nThanks for registering with us.\n\nBest,\nTeam"
-            mail.send(msg)  # <-- this sends the original mail
-
-        flash("Registration successful! Please check your email and log in.", "success")
+        flash("Registration successful! Please log in.", "success")
         return redirect(url_for('login'))
-
     return render_template('register.html')
-
 
 
 @app.route('/login', methods=['GET', 'POST'])
