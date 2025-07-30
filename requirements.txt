@@ -11,4 +11,4 @@ Flask-Login
 pandas
 scikit-learn
 gunicorn
-
+Flask-Mail
