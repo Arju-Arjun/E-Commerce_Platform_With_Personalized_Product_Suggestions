@@ -5,3 +5,10 @@ Werkzeug>=2.0
 pandas>=1.5
 scikit-learn>=1.2
 numpy>=1.23
+Flask
+Flask-SQLAlchemy
+Flask-Login
+pandas
+scikit-learn
+gunicorn
+
